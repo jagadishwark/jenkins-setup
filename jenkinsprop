@@ -8,7 +8,7 @@ node {
 
 pipeline {
 
-   agent { label 'slave_Maven_whitelabel-web' }
+   
 
    options {
 
