@@ -1,0 +1,75 @@
+properties([pipelineTriggers([githubPush()])])
+
+node {
+
+   git url: 'git@github.com:discovery-fusion/selene.git', credentialsId:'85c4d58c-fa8e-49d8-853b-0406087aa146', branch: "develop"
+
+}
+
+pipeline {
+
+   agent { label 'slave_Maven_whitelabel-web' }
+
+   options {
+
+      disableConcurrentBuilds()
+
+   }
+
+   parameters {
+
+      choice(choices: "nonprod (dev1 + test1)", description: "Environment to release to", name: 'ENV')
+
+   }
+
+   stages {
+
+      stage ('CreateDevImage') {
+         steps {
+
+           echo "Checking out selene repository"
+
+           git branch: 'develop', credentialsId: '85c4d58c-fa8e-49d8-853b-0406087aa146', url: 'git@github.com:discovery-fusion/selene.git'
+
+           echo "Set VERSION to git hash"
+           script {
+              env.VERSION = sh (script: "git log -n 1 --pretty=format:'%H'| cut -c1-20 | tr -d '[:space:]' ", returnStdout: true)
+               }
+
+           echo "Notify"
+           slackSend color: "good", channel: “#Jagadishwar Reddy“, message: "Build STARTING | ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nParameters | VERSION: ${env.VERSION}"
+
+           echo "Executing maven command"
+           sh '''mvn clean install -DskipTests -Dselene.ver=$VERSION'''
+
+           echo "Deploy on Dev1"
+           withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'f5ffbb3f-fed2-4c05-9fe2-f2df4a3db0be', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']] ) {
+
+             sh '''curl -u $USERNAME:$PASSWORD -F file=@config/target/selene-config-$VERSION.zip -F name=selene-config-$VERSION -F force=true -F install=true http://localhost:4502/crx/packmgr/service.jsp'''
+
+
+
+             sh '''curl -u $USERNAME:$PASSWORD -F file=@jcr/target/selene-$VERSION.zip -F name=selene-$VERSION -F force=true -F install=true http://localhost:4502/crx/packmgr/service.jsp/crx/packmgr/service.jsp'''
+
+           }
+        
+        }
+
+      }
+
+      }
+
+   post {
+
+      success {
+         slackSend color: "good", message: "Build SUCCESS | ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nParameters | VERSION: ${env.VERSION}"
+         slackSend color: "good", channel: "#Jagadishwar Reddy", message: "Build SUCCESS | ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nParameters | VERSION: ${env.VERSION}"
+      }
+
+      failure {
+         slackSend color: "danger", message: "Build FAILED | ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nParameters | VERSION: ${env.VERSION}"
+         slackSend color: "danger", channel: "#Jagadishwar Reddy", message: "Build FAILED | ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nParameters | VERSION: ${env.VERSION}"
+      }
+
+   }
+}
