@@ -2,7 +2,7 @@ properties([pipelineTriggers([githubPush()])])
 
 node {
 
-   git url: 'git@github.com:discovery-fusion/selene.git', credentialsId:'85c4d58c-fa8e-49d8-853b-0406087aa146', branch: "develop"
+   git url: 'https://github.com/discovery-fusion/selene.git', credentialsId:'85c4d58c-fa8e-49d8-853b-0406087aa146', branch: "develop"
 
 }
 
@@ -29,7 +29,7 @@ pipeline {
 
            echo "Checking out selene repository"
 
-           git branch: 'develop', credentialsId: '85c4d58c-fa8e-49d8-853b-0406087aa146', url: 'git@github.com:discovery-fusion/selene.git'
+           git branch: 'develop', credentialsId: '85c4d58c-fa8e-49d8-853b-0406087aa146', url: 'https://github.com/discovery-fusion/selene.git'
 
            echo "Set VERSION to git hash"
            script {
