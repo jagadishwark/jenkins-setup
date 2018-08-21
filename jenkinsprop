@@ -36,9 +36,7 @@ pipeline {
               env.VERSION = sh (script: "git log -n 1 --pretty=format:'%H'| cut -c1-20 | tr -d '[:space:]' ", returnStdout: true)
                }
 
-           echo "Notify"
-           slackSend color: "good", channel: “#Jagadishwar Reddy“, message: "Build STARTING | ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nParameters | VERSION: ${env.VERSION}"
-
+  
            echo "Executing maven command"
            sh '''mvn clean install -DskipTests -Dselene.ver=$VERSION'''
 
@@ -59,17 +57,5 @@ pipeline {
 
       }
 
-   post {
-
-      success {
-         slackSend color: "good", message: "Build SUCCESS | ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nParameters | VERSION: ${env.VERSION}"
-         slackSend color: "good", channel: "#Jagadishwar Reddy", message: "Build SUCCESS | ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nParameters | VERSION: ${env.VERSION}"
-      }
-
-      failure {
-         slackSend color: "danger", message: "Build FAILED | ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nParameters | VERSION: ${env.VERSION}"
-         slackSend color: "danger", channel: "#Jagadishwar Reddy", message: "Build FAILED | ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nParameters | VERSION: ${env.VERSION}"
-      }
-
-   }
+  
 }
