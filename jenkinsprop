@@ -35,11 +35,13 @@ pipeline {
            echo "Set VERSION to git hash"
            script {
               env.VERSION = sh (script: "git log -n 1 --pretty=format:'%H'| cut -c1-20 | tr -d '[:space:]' ", returnStdout: true)
+
+def mvnHome = tool name: 'Maven 3.5.4', type: 'maven'
                }
 
   
            echo "Executing maven command"
-           def mvnHome = tool name: 'Maven 3.5.4', type: 'maven'
+           
            sh "${mvnHome}/bin/mvn clean install -DskipTests -Dselene.ver=$VERSION"
 
            echo "Deploy on Dev1"
