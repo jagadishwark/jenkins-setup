@@ -11,6 +11,10 @@ pipeline {
 
    agent any
 
+tools {
+    maven 'mvn-3.5.4'
+  }
+
    options {
 
       disableConcurrentBuilds()
@@ -36,15 +40,12 @@ pipeline {
            script {
               env.VERSION = sh (script: "git log -n 1 --pretty=format:'%H'| cut -c1-20 | tr -d '[:space:]' ", returnStdout: true)
 
-def mvnHome = tool name: 'Maven 3.5.4', type: 'maven'
-echo "mvnHome value:::"
-echo $mvnHome
                }
 
   
            echo "Executing maven command"
            
-           sh "${mvnHome}/bin/mvn clean install -DskipTests -Dselene.ver=$VERSION"
+            sh '''mvn clean install -DskipTests -Dselene.ver=$VERSION'''
 
            echo "Deploy on Dev1"
            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'f5ffbb3f-fed2-4c05-9fe2-f2df4a3db0be', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']] ) {
