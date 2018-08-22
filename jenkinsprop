@@ -36,7 +36,9 @@ pipeline {
            script {
               env.VERSION = sh (script: "git log -n 1 --pretty=format:'%H'| cut -c1-20 | tr -d '[:space:]' ", returnStdout: true)
 
-def mvnHome = tool name: 'Maven 3.5.4', type: 'maven'
+ env.mvnHome = tool name: 'Maven 3.5.4', type: 'maven'
+echo "mvnHome value:::"
+echo $mvnHome
                }
 
   
